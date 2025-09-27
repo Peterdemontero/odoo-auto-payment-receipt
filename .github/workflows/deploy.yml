@@ -1,0 +1,25 @@
+name: Deploy Odoo Addons
+
+on:
+  push:
+    tags:
+      - 'v*'   # only run when you push tags like v1.0.0, v2.1.0 etc.
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            set -e
+            cd /opt/odoo18_addons
+            # fetch all tags
+            git fetch --tags
+            # checkout the exact tag
+            git checkout ${{ github.ref_name }}
+            docker restart odoo18
