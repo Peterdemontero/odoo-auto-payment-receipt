@@ -17,9 +17,9 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             set -e
-            cd /opt/odoo18_addons
+            cd /home/ubuntu/odoo_addons
             # fetch all tags
             git fetch --tags
             # checkout the exact tag
             git checkout ${{ github.ref_name }}
-            docker restart odoo18
+            docker restart odoo
