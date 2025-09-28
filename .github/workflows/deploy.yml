@@ -13,10 +13,10 @@ jobs:
       - name: Checkout repo at tag
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0   # important: fetch all tags
+          fetch-depth: 0
           ref: ${{ github.ref }}   # checkout the exact tag pushed
 
-      - name: Deploy addon to server
+      - name: Copy addon to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_IP }}
@@ -34,5 +34,5 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: ${{ secrets.SERVER_SSH_PORT }}
           script: |
-            echo "Deploying tag ${{ github.ref_name }}..."
+            echo "Deployed tag ${{ github.ref_name }} to /home/ubuntu/odoo_addons/${{ github.event.repository.name }}"
             docker restart odoo
