@@ -1,25 +1,38 @@
-name: Deploy Odoo Addons
+name: Deploy Odoo Addon (Tag-based)
 
 on:
   push:
     tags:
-      - 'v*'   # only run when you push tags like v1.0.0, v2.1.0 etc.
+      - 'v*'   # run only when you push tags like v1.0.0, v2.1.2
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Deploy via SSH
+      - name: Checkout repo at tag
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref }}   # checkout the exact tag pushed
+
+      - name: Copy addon to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_SSH_PORT }}
+          source: "./*"
+          target: "/home/ubuntu/odoo_addons/${{ github.event.repository.name }}"
+
+      - name: Restart Odoo container
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_SSH_PORT }}
           script: |
-            set -e
-            cd /home/ubuntu/odoo_addons
-            # fetch all tags
-            git fetch --tags
-            # checkout the exact tag
-            git checkout ${{ github.ref_name }}
+            echo "Deployed tag ${{ github.ref_name }} to /home/ubuntu/odoo_addons/${{ github.event.repository.name }}"
             docker restart odoo
